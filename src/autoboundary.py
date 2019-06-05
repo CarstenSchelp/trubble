@@ -44,6 +44,14 @@ def argsplit(a):
     return ix_lo_a, ix_hi_a
 
 
+def labelsplit(a):
+    ix_lo, ix_hi = argsplit(a)
+    labels = np.empty(a.shape, dtype=int)
+    np.put(labels, ix_lo, 0)
+    np.put(labels, ix_hi, 1)
+    return labels
+
+
 def _get_boundary_ix(ix_high_deltas, highest_index, max_clusters=None):
     # Add lowest and highest overall index to the indices.
     # In order to get also the lowest and highest cluster complete.
@@ -51,19 +59,22 @@ def _get_boundary_ix(ix_high_deltas, highest_index, max_clusters=None):
     ix_cluster_boundaries.add(0)
     ix_cluster_boundaries.add(highest_index)
     # sort on index so that we can apply ranges on it.
-    flat_boundaries = np.sort(list(ix_cluster_boundaries))
+    boundaries = np.sort(list(ix_cluster_boundaries))
 
     if max_clusters:
         max_boundaries = max_clusters + 1
-        if flat_boundaries.size > max_boundaries:
+        if boundaries.size > max_boundaries:
+            # hold on to greatest discarded delta value
+            greatest_discarded_delta = boundaries[-max_boundaries]
             # truncate leading indices (those of the lower deltas)
-            low_delta = flat_boundaries[-max_boundaries]
-            flat_boundaries = flat_boundaries[-max_clusters:]
-            flat_boundaries = flat_boundaries[flat_boundaries > low_delta]
+            boundaries = boundaries[-max_clusters:]
+            # to be consistent, discard possibly remaining
+            # deltas that are equal to greatest discarded delta valye
+            boundaries = boundaries[boundaries > greatest_discarded_delta]
             # re-prepend the very first index (zero).
-            flat_boundaries = np.insert(flat_boundaries, 0, 0)
+            boundaries = np.insert(boundaries, 0, 0)
 
-    return zip(flat_boundaries[:-1], flat_boundaries[1:])
+    return zip(boundaries[:-1], boundaries[1:])
 
 
 def argcluster(a, max_clusters=None):
@@ -93,3 +104,11 @@ def argcluster(a, max_clusters=None):
         clusters.append(sort_ix[lo:hi])
 
     return tuple(clusters)
+
+
+def labelcluster(a, max_clusters=None):
+    cluster_ixes = argcluster(a, max_clusters=max_clusters)
+    labels = np.empty(a.shape, dtype=int)
+    for label, cluster_ix in enumerate(cluster_ixes):
+        np.put(labels, cluster_ix, label)
+    return labels

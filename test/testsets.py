@@ -44,10 +44,10 @@ def create_small_testsets():
         'values': incremental})
 
     noisy_incremental = np.array((2, 4, 6, 8, 10, 12, 14)) \
-        * np.random.uniform(low=0.95, high=1.05, size=7)
+        * np.random.uniform(low=0.90, high=1.1, size=7)
     np.random.shuffle(noisy_incremental)
     testsets.append({
-        'name': 'similar deltas (with noise)',
+        'name': 'similar deltas with noise',
         'values': noisy_incremental})
 
     exponential = np.exp(np.arange(1, 4, 0.2))
@@ -77,10 +77,10 @@ def create_normal_testsets():
 
     testsets.append({
         'name': 'single normal dist',
-        'values': np.random.normal(100.0, 10, 100)})
+        'values': np.random.normal(100.0, 20, 30)})
 
-    norm1 = np.random.normal(100.0, 10, 100)
-    norm2 = np.random.normal(60, 5, 100)
+    norm1 = np.random.normal(100.0, 15, 20)
+    norm2 = np.random.normal(60, 20, 20)
     both = np.concatenate((norm1, norm2))
     np.random.shuffle(both)
     testsets.append({
