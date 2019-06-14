@@ -6,9 +6,13 @@ import numpy as np
 import sys
 sys.path.append('../src/')
 from normpca import NormPCA
+sys.path.append('../test/')
+import testsets as ts
+
 
 plot_results = False
 
+# %%
 
 def test_project_01():
     data = np.array([
@@ -118,10 +122,26 @@ def test_project_03():
         plt.show()
 
 
+def test_plot_projection_00():
+    if not plot_results:
+        return
+    datasets = ts.create_clustering_testsets()
+    fig, axes = plt.subplots(nrows=2, ncols=len(datasets),
+                             figsize=(3 * len(datasets),2 * 3))
+    for ix, data in enumerate(datasets):
+        X, labels = data
+        npca = NormPCA(X)
+        x_prj = npca.projection
+        axes[0, ix].scatter(X[:, 0], X[:, 1], s=0.5)
+        axes[1, ix].scatter(x_prj[:, 0], x_prj[:, 1], s=0.5)
+    plt.show()
+
+
 if __name__ == "__main__":
     plot_results = True
     import matplotlib.pyplot as plt
     test_project_01()
     test_project_02()
     test_project_03()
+    test_plot_projection_00()
     print("ALL PASSED!")

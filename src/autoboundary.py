@@ -23,6 +23,15 @@ def _build_indexed_deltas(a):
     return a_sorted, deltas, sort_ix
 
 
+def _build_indexed_deltas_presorted(a):
+    # build deltas
+    deltas = np.diff(a)
+    # prepend zero in order to make length of
+    # deltas match length of original values
+    deltas = np.insert(deltas, 0, 0)
+    return a.copy(), deltas, np.arange(0, len(a))
+
+
 def deltas_are_homogenous(deltas):
     return len(deltas) > 2 and (deltas[1:-2] == deltas[-1]).all()
 
@@ -33,6 +42,7 @@ def argsplit(a):
 
     _validate_one_dimensional(a)
     a_sorted, deltas, sort_ix = _build_indexed_deltas(np.array(a))
+    # TODO: if is_presorted: _build_indexed_deltas_presorted(a)
 
     if deltas_are_homogenous(deltas):
         return np.empty((0, 0)).astype(int), sort_ix
@@ -86,7 +96,7 @@ def argcluster(a, max_clusters=None):
     _validate_one_dimensional(a)
     a_sorted, deltas, sort_ix = _build_indexed_deltas(np.array(a))
 
-    ix_low_deltas, ix_high_deltas = argsplit(deltas)
+    ix_low_deltas, ix_high_deltas = argsplit(np.log(1 + deltas))
 
     # When each element gets a cluster of its own
     # there is no point in clustering.

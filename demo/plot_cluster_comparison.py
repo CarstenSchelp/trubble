@@ -46,7 +46,8 @@ varied = datasets.make_blobs(n_samples=n_samples,
 # ============
 # Set up cluster parameters
 # ============
-plt.figure(figsize=(9 * 2 + 3, 12.5))
+# plt.figure(figsize=(9 * 2 + 3, 12.5))
+plt.figure(figsize=(9 * 1.2 + 3, 12.5))
 plt.subplots_adjust(left=.02, right=.98, bottom=.001, top=.96, wspace=.05,
                     hspace=.01)
 
@@ -116,15 +117,19 @@ for i_dataset, (dataset, algo_params) in enumerate(datasets):
     mdc = MyDumbClusterer()
 
     clustering_algorithms = (
-        ('MiniBatchKMeans', two_means),
-        ('AffinityPropagation', affinity_propagation),
-        ('MeanShift', ms),
+# These ones seem to be weaker concepts
+#        ('MiniBatchKMeans', two_means),
+#        ('AffinityPropagation', affinity_propagation),
+#        ('MeanShift', ms),
         ('SpectralClustering', spectral),
         ('Ward', ward),
         ('AgglomerativeClustering', average_linkage),
         ('DBSCAN', dbscan),
-        ('Birch', birch),
-        ('GaussianMixture', gmm),
+# Birch seem to be a weaker concept
+#        ('Birch', birch),
+# Not the weakest, not the slowest,
+# but doesn't scale well.        
+#        ('GaussianMixture', gmm),
         ('MyDumbClusterer', mdc)
     )
 
@@ -147,10 +152,11 @@ for i_dataset, (dataset, algo_params) in enumerate(datasets):
             algorithm.fit(X)
 
         t1 = time.time()
-        if hasattr(algorithm, 'labels_'):
-            y_pred = algorithm.labels_.astype(np.int)
-        else:
-            y_pred = algorithm.predict(X)
+#        if hasattr(algorithm, 'labels_'):
+        y_pred = algorithm.labels_.astype(np.int)
+#        else:
+#            # Gaussian Mixture works differentl:
+#            y_pred = algorithm.predict(X)
 
         plt.subplot(len(datasets), len(clustering_algorithms), plot_num)
         if i_dataset == 0:

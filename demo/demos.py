@@ -7,11 +7,12 @@ Created on Tue Jun  4 21:28:52 2019
 # import numpy as np
 import matplotlib.pyplot as plt
 import sys
-import autoboundary as abd
-import testsets as ts
 
 sys.path.append('../src/')
 sys.path.append('../test/')
+import autoboundary as abd
+import testsets as ts
+
 
 # testsets = ts.create_normal_testsets()
 testsets = ts.create_small_testsets()
@@ -42,7 +43,7 @@ for row_ix in range(0, len(testsets)):
         color='red')
     axes[row_ix, 1].set_title(f'{name} (sorted and split)')
 
-    print('split labels:', abd.labelsplit(a))
+    #print('split labels:', abd.labelsplit(a))
 
 plt.subplots_adjust(hspace=0.7)
 plt.show()
@@ -72,7 +73,7 @@ for row_ix in range(0, len(testsets)):
         offset += clust_ix.size
     axes[row_ix, 1].set_title(f'{name} (sorted and clustered)')
 
-    print('cluster labels:', abd.labelcluster(a))
+    #print('cluster labels:', abd.labelcluster(a))
 
 plt.subplots_adjust(hspace=0.7)
 plt.show()

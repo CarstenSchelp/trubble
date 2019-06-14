@@ -56,6 +56,12 @@ def create_small_testsets():
         'name': 'exponential',
         'values': exponential})
 
+    squareroot = np.sqrt(np.arange(1, 4, 0.2))
+    np.random.shuffle(squareroot)
+    testsets.append({
+        'name': 'square root',
+        'values': squareroot})
+
     testsets.append({
         'name': 'just two elements',
         'values': np.array((3, 1))})
@@ -88,3 +94,28 @@ def create_normal_testsets():
         'values': both})
 
     return testsets
+
+from sklearn import datasets
+from sklearn.preprocessing import StandardScaler
+
+def create_clustering_testsets():
+    n_samples = 1500
+    noisy_circles = datasets.make_circles(n_samples=n_samples, factor=.5,
+                                          noise=.05)
+    noisy_moons = datasets.make_moons(n_samples=n_samples, noise=.05)
+    blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
+    no_structure = np.random.rand(n_samples, 2), None
+    
+    # Anisotropicly distributed data
+    random_state = 170
+    X, y = datasets.make_blobs(n_samples=n_samples, random_state=random_state)
+    transformation = [[0.6, -0.6], [-0.4, 0.8]]
+    X_aniso = np.dot(X, transformation)
+    aniso = (X_aniso, y)
+    
+    # blobs with varied variances
+    varied = datasets.make_blobs(n_samples=n_samples,
+                                 cluster_std=[1.0, 2.5, 0.5],
+                                 random_state=random_state)
+
+    return [noisy_circles, noisy_moons, varied, aniso, blobs, no_structure]
