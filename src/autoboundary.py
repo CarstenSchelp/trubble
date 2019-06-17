@@ -6,7 +6,6 @@ Created on Mon Apr    8 12:32:30 2019
 """
 import numpy as np
 
-
 def _validate_one_dimensional(a):
     if len(a.shape) != 1:
         raise ValueError('Input must be a one-dimensional array.')
@@ -32,11 +31,21 @@ def _build_indexed_deltas_presorted(a):
     return a.copy(), deltas, np.arange(0, len(a))
 
 
-def deltas_are_homogenous(deltas):
+def _deltas_are_homogenous(deltas):
     return len(deltas) > 2 and (deltas[1:-2] == deltas[-1]).all()
 
 
-def argsplit(a):
+def _build_weight(n, rel_fade_size):
+    if n < 3:
+        return np.repeat(1, n)
+    n_fade = max(int(n * rel_fade_size), 1)
+    weights = np.repeat(n_fade, n)
+    weights[:n_fade] = range(0, n_fade)
+    weights[-n_fade:] = range(n_fade-1, -1, -1)
+    return weights
+
+
+def argsplit(a, rel_fade_size=0.0):
     if len(a) == 0:
         return np.empty((0, 0)).astype(int), np.empty((0, 0)).astype(int)
 
@@ -44,8 +53,12 @@ def argsplit(a):
     a_sorted, deltas, sort_ix = _build_indexed_deltas(np.array(a))
     # TODO: if is_presorted: _build_indexed_deltas_presorted(a)
 
-    if deltas_are_homogenous(deltas):
+    if _deltas_are_homogenous(deltas):
         return np.empty((0, 0)).astype(int), sort_ix
+
+    if rel_fade_size:
+        weight = _build_weight(len(deltas), rel_fade_size=rel_fade_size)
+        deltas *= weight
 
     # Find the index of the highest delta value.
     ix_max = deltas.argmax()
@@ -54,12 +67,16 @@ def argsplit(a):
     return ix_lo_a, ix_hi_a
 
 
-def labelsplit(a):
-    ix_lo, ix_hi = argsplit(a)
-    labels = np.empty(a.shape, dtype=int)
-    np.put(labels, ix_lo, 0)
-    np.put(labels, ix_hi, 1)
+def ixes_to_labels(n, ixes):
+    labels = np.empty(n, dtype=int)
+    for label, ix in enumerate(ixes):
+        np.put(labels, ix, label)
     return labels
+
+
+def labelsplit(a, rel_fade_size=0.0):
+    ixes = argsplit(a, rel_fade_size=rel_fade_size)
+    return ixes_to_labels(a.shape, ixes)
 
 
 def _get_boundary_ix(ix_high_deltas, highest_index, max_clusters=None):
@@ -118,7 +135,4 @@ def argcluster(a, max_clusters=None):
 
 def labelcluster(a, max_clusters=None):
     cluster_ixes = argcluster(a, max_clusters=max_clusters)
-    labels = np.empty(a.shape, dtype=int)
-    for label, cluster_ix in enumerate(cluster_ixes):
-        np.put(labels, cluster_ix, label)
-    return labels
+    return ixes_to_labels(a.shape, cluster_ixes)

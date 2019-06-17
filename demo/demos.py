@@ -43,8 +43,6 @@ for row_ix in range(0, len(testsets)):
         color='red')
     axes[row_ix, 1].set_title(f'{name} (sorted and split)')
 
-    #print('split labels:', abd.labelsplit(a))
-
 plt.subplots_adjust(hspace=0.7)
 plt.show()
 
