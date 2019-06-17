@@ -6,6 +6,7 @@ Created on Mon Apr    8 12:32:30 2019
 """
 import numpy as np
 
+
 def _validate_one_dimensional(a):
     if len(a.shape) != 1:
         raise ValueError('Input must be a one-dimensional array.')
@@ -13,22 +14,12 @@ def _validate_one_dimensional(a):
 
 def _build_indexed_deltas(a):
     sort_ix = a.argsort()
-    a_sorted = a[sort_ix]
     # build deltas
-    deltas = np.diff(a_sorted)
+    deltas = np.diff(a[sort_ix])
     # prepend zero in order to make length of
     # deltas match length of original values
     deltas = np.insert(deltas, 0, 0)
-    return a_sorted, deltas, sort_ix
-
-
-def _build_indexed_deltas_presorted(a):
-    # build deltas
-    deltas = np.diff(a)
-    # prepend zero in order to make length of
-    # deltas match length of original values
-    deltas = np.insert(deltas, 0, 0)
-    return a.copy(), deltas, np.arange(0, len(a))
+    return deltas, sort_ix
 
 
 def _deltas_are_homogenous(deltas):
@@ -45,14 +36,7 @@ def _build_weight(n, rel_fade_size):
     return weights
 
 
-def argsplit(a, rel_fade_size=0.0):
-    if len(a) == 0:
-        return np.empty((0, 0)).astype(int), np.empty((0, 0)).astype(int)
-
-    _validate_one_dimensional(a)
-    a_sorted, deltas, sort_ix = _build_indexed_deltas(np.array(a))
-    # TODO: if is_presorted: _build_indexed_deltas_presorted(a)
-
+def _split(deltas, sort_ix, rel_fade_size=0.0):
     if _deltas_are_homogenous(deltas):
         return np.empty((0, 0)).astype(int), sort_ix
 
@@ -65,6 +49,16 @@ def argsplit(a, rel_fade_size=0.0):
     ix_lo_a = sort_ix[0:ix_max]
     ix_hi_a = sort_ix[ix_max:]
     return ix_lo_a, ix_hi_a
+
+
+def argsplit(a, rel_fade_size=0.0):
+    if len(a) == 0:
+        return np.empty((0, 0)).astype(int), np.empty((0, 0)).astype(int)
+
+    _validate_one_dimensional(a)
+    deltas, sort_ix = _build_indexed_deltas(np.array(a))
+
+    return _split(deltas, sort_ix, rel_fade_size=0.0)
 
 
 def ixes_to_labels(n, ixes):
@@ -111,7 +105,7 @@ def argcluster(a, max_clusters=None):
         return ()
 
     _validate_one_dimensional(a)
-    a_sorted, deltas, sort_ix = _build_indexed_deltas(np.array(a))
+    deltas, sort_ix = _build_indexed_deltas(np.array(a))
 
     ix_low_deltas, ix_high_deltas = argsplit(np.log(1 + deltas))
 

@@ -27,7 +27,6 @@ class MyDumbClusterer():
             for label in set(labels):
                 ix_label = (labels == label)
                 subX = X[ix_label]
-                # TODO: create change of cluster quality as stop criterium.
                 if subX.size <= X.shape[1]:
                     continue
                 subLabels = self._divide_and(subX)
@@ -38,7 +37,7 @@ class MyDumbClusterer():
 
     def _divide_and(self, X):
         nrmpca = npca.NormPCA(X)
-        ixes = abd.argsplit(nrmpca.projection[:, 0], rel_fade_size=0.3)
-        # ix_lo, ix_hi = ixes TODO: calc cluster quality, here.
-        # ... q = calc_q(X[ix_lo]) ...
-        return abd.ixes_to_labels(X.shape[0], ixes)
+        deltas, sort_ix = abd._build_indexed_deltas(nrmpca.projection[:, 0])
+        # TODO: create change of cluster quality as stop criterium.
+        split_ixes = abd._split(deltas, sort_ix, rel_fade_size=0.3)
+        return abd.ixes_to_labels(X.shape[0], split_ixes)
