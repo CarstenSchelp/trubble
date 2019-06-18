@@ -5,7 +5,7 @@ import numpy as np
 class NormPCA:
     def __init__(self, data):
         if data.shape[0] < data.shape[1]:
-            raise ValueError(f'"data" should have more rows than columns.')
+            raise ValueError(f'"data" should have more rows than columns. ({data.shape[0]} rows, {data.shape[1]} columns)')
         order = data.shape[1]
         self.mean = data.mean(axis=0)
         self.covariance = np.cov(data, rowvar=False, bias=True)
@@ -15,7 +15,7 @@ class NormPCA:
         self.corrcoef = self.covariance / np.sqrt(var * var.T)
 
         eigval, eignvect = np.linalg.eig(self.corrcoef)
-        sort_ix = np.argsort(eigval)
+        sort_ix = np.flip(np.argsort(eigval))
         self.eigenvalues = eigval[sort_ix]
         self.eigenvectors = eignvect[sort_ix]
         self.projection = data.dot(self.eigenvectors.T)

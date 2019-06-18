@@ -36,7 +36,7 @@ def _build_weight(n, rel_fade_size):
     return weights
 
 
-def _split(deltas, sort_ix, rel_fade_size=0.0):
+def _split_by_deltas(deltas, sort_ix, rel_fade_size=0.0):
     if _deltas_are_homogenous(deltas):
         return np.empty((0, 0)).astype(int), sort_ix
 
@@ -58,7 +58,7 @@ def argsplit(a, rel_fade_size=0.0):
     _validate_one_dimensional(a)
     deltas, sort_ix = _build_indexed_deltas(np.array(a))
 
-    return _split(deltas, sort_ix, rel_fade_size=0.0)
+    return _split_by_deltas(deltas, sort_ix, rel_fade_size=0.0)
 
 
 def ixes_to_labels(n, ixes):
