@@ -15,7 +15,8 @@ class NormPCA:
         self.corrcoef = self.covariance / np.sqrt(var * var.T)
 
         eigval, eignvect = np.linalg.eig(self.corrcoef)
-        sort_ix = np.flip(np.argsort(eigval))
+        sort_ix = np.argsort(eigval)
+#        sort_ix = np.flip(np.argsort(eigval))
         self.eigenvalues = eigval[sort_ix]
         self.eigenvectors = eignvect[sort_ix]
         self.projection = data.dot(self.eigenvectors.T)

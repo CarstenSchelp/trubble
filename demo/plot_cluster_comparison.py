@@ -63,17 +63,17 @@ default_base = {'quantile': .3,
                 'xi': 0.05,
                 'min_cluster_size': 0.1}
 
-datasets = [
-    (noisy_circles, {'damping': .77, 'preference': -240,
-                     'quantile': .2, 'n_clusters': 2,
-                     'min_samples': 20, 'xi': 0.25}),
-    (noisy_moons, {'damping': .75, 'preference': -220, 'n_clusters': 2}),
-    (varied, {'eps': .18, 'n_neighbors': 2,
-              'min_samples': 5, 'xi': 0.035, 'min_cluster_size': .2}),
-    (aniso, {'eps': .15, 'n_neighbors': 2,
-             'min_samples': 20, 'xi': 0.1, 'min_cluster_size': .2}),
-    (blobs, {}),
-    (no_structure, {})]
+datasets = [(blobs, {})]
+#    (noisy_circles, {'damping': .77, 'preference': -240,
+#                     'quantile': .2, 'n_clusters': 2,
+#                     'min_samples': 20, 'xi': 0.25}),
+#    (noisy_moons, {'damping': .75, 'preference': -220, 'n_clusters': 2}),
+#    (varied, {'eps': .18, 'n_neighbors': 2,
+#              'min_samples': 5, 'xi': 0.035, 'min_cluster_size': .2}),
+#    (aniso, {'eps': .15, 'n_neighbors': 2,
+#             'min_samples': 20, 'xi': 0.1, 'min_cluster_size': .2}),
+#    (blobs, {}),
+#    (no_structure, {})]
 
 for i_dataset, (dataset, algo_params) in enumerate(datasets):
     # update parameters with dataset-specific values
@@ -116,22 +116,24 @@ for i_dataset, (dataset, algo_params) in enumerate(datasets):
         n_components=params['n_clusters'], covariance_type='full')
     mdc = MyDumbClusterer()
 
-    clustering_algorithms = (
+    clustering_algorithms = (('MyDumbClusterer', mdc),)
 # These ones seem to be weaker concepts
 #        ('MiniBatchKMeans', two_means),
 #        ('AffinityPropagation', affinity_propagation),
 #        ('MeanShift', ms),
-        ('SpectralClustering', spectral),
-        ('Ward', ward),
-        ('AgglomerativeClustering', average_linkage),
-        ('DBSCAN', dbscan),
+## KEEP THESE IN DEMO    
+#        ('SpectralClustering', spectral),
+#        ('Ward', ward),
+#        ('AgglomerativeClustering', average_linkage),
+#        ('DBSCAN', dbscan),
+##
 # Birch seem to be a weaker concept
 #        ('Birch', birch),
 # Not the weakest, not the slowest,
 # but doesn't scale well.        
 #        ('GaussianMixture', gmm),
-        ('MyDumbClusterer', mdc)
-    )
+#        ('MyDumbClusterer', mdc)
+#    )
 
     for name, algorithm in clustering_algorithms:
         t0 = time.time()

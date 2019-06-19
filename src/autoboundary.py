@@ -26,23 +26,9 @@ def _deltas_are_homogenous(deltas):
     return len(deltas) > 2 and (deltas[1:-2] == deltas[-1]).all()
 
 
-def _build_weight(n, rel_fade_size):
-    if n < 3:
-        return np.repeat(1, n)
-    n_fade = max(int(n * rel_fade_size), 1)
-    weights = np.repeat(n_fade, n)
-    weights[:n_fade] = range(0, n_fade)
-    weights[-n_fade:] = range(n_fade-1, -1, -1)
-    return weights
-
-
-def _split_by_deltas(deltas, sort_ix, rel_fade_size=0.0):
+def _split_by_deltas(deltas, sort_ix):
     if _deltas_are_homogenous(deltas):
         return np.empty((0, 0)).astype(int), sort_ix
-
-    if rel_fade_size:
-        weight = _build_weight(len(deltas), rel_fade_size=rel_fade_size)
-        deltas *= weight
 
     # Find the index of the highest delta value.
     ix_max = deltas.argmax()
@@ -51,14 +37,14 @@ def _split_by_deltas(deltas, sort_ix, rel_fade_size=0.0):
     return ix_lo_a, ix_hi_a
 
 
-def argsplit(a, rel_fade_size=0.0):
+def argsplit(a):
     if len(a) == 0:
         return np.empty((0, 0)).astype(int), np.empty((0, 0)).astype(int)
 
     _validate_one_dimensional(a)
     deltas, sort_ix = _build_indexed_deltas(np.array(a))
 
-    return _split_by_deltas(deltas, sort_ix, rel_fade_size=0.0)
+    return _split_by_deltas(deltas, sort_ix)
 
 
 def ixes_to_labels(n, ixes):
@@ -68,8 +54,8 @@ def ixes_to_labels(n, ixes):
     return labels
 
 
-def labelsplit(a, rel_fade_size=0.0):
-    ixes = argsplit(a, rel_fade_size=rel_fade_size)
+def labelsplit(a):
+    ixes = argsplit(a)
     return ixes_to_labels(a.shape, ixes)
 
 
