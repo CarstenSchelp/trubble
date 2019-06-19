@@ -37,9 +37,9 @@ def test_project_01():
         f"""projection should have same shape as original data.
         Was\n{nrm_pca.projection.shape}."""
 
-    assert np.isclose(np.var(nrm_pca.projection[:, 1]), 0),\
-        f"""Total correlation should result in second PCA-axis
-        having zero variance.Was\n{nrm_pca.projection[:, 1]}"""
+    assert np.isclose(np.var(nrm_pca.projection[:, 0]), 0),\
+        f"""Total correlation should result in first PCA-axis
+        having zero variance.Was\n{nrm_pca.projection[:, 0]}"""
 
     if plot_results:
         plt.scatter(data[:, 0], data[:, 1])
@@ -74,9 +74,9 @@ def test_project_02():
         f"""projection should have same shape as original data.
         Was\n{nrm_pca.projection.shape}."""
 
-    assert np.isclose(np.var(nrm_pca.projection[:, 1]), 0),\
-        f"""Total correlation should result in second PCA-axis
-        having zero variance.Was\n{nrm_pca.projection[:, 1]}"""
+    assert np.isclose(np.var(nrm_pca.projection[:, 0]), 0),\
+        f"""Total correlation should result in first PCA-axis
+        having zero variance.Was\n{nrm_pca.projection[:, 0]}"""
 
     if plot_results:
         plt.scatter(data[:, 0], data[:, 1])
@@ -90,14 +90,14 @@ def test_project_02():
 
 def test_project_03():
     data = np.array([
-            [-1, -1],
-            [4, 4],
-            [4, -1],
-            [-1, 4]])
+            [-4, -4],
+            [1, 1],
+            [1, -4],
+            [-4, 1]])
     nrm_pca = NormPCA(data)
 
-    assert (nrm_pca.mean == [1.5, 1.5]).all(),\
-        f"""mean should be [1.5, 1.5].
+    assert (nrm_pca.mean == [-1.5, -1.5]).all(),\
+        f"""mean should be [-1.5, -1.5].
         Was\n {nrm_pca.mean}."""
 
     assert nrm_pca.variance[0] == nrm_pca.variance[1],\

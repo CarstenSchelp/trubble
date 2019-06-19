@@ -16,18 +16,21 @@ import normpca as npca
 
 
 class MyDumbClusterer():
-    
+
     def __init__(self):
         self._rel_fade_size = 0.5
         self._next_label = 0
-    
+
     def fit(self, X):
         return self._and_conquer(X)
-    
+
     def _get_next_label(self):
         next_label = self._next_label
         self._next_label += 1
         return next_label
+
+    def _is_progress(self, cq_parent, cq_child1, cq_child2):
+        return cq_child1 > cq_parent and cq_child2 > cq_parent
 
     def _and_conquer(self, X):
         print()
@@ -51,10 +54,10 @@ class MyDumbClusterer():
                 subLabels, cq_parent, cq_low, cq_high = \
                     self._divide(subX, labels_to_process[label], label)
                 if not labels_to_process[label]:
-                    # add calculated cluster quality for first label (zero)
+                    # add calculated cluster quality for first label
                     labels_to_process[label] = cq_parent
 
-                if cq_low < cq_parent or cq_high < cq_parent:
+                if not self._is_progress(cq_parent, cq_low, cq_high):
                     print(f'stop at label {label} cqs: {cq_parent, cq_low, cq_high}')
                     labels_to_process.pop(label)
                     continue
@@ -66,8 +69,16 @@ class MyDumbClusterer():
                 labels_to_process[new_labels[0]] = cq_low
                 labels_to_process[new_labels[1]] = cq_high
                 print(f'replaced label {label} with {new_labels[0]} and {new_labels[1]}')
-                ax = plt.subplot(111)               
-                ax.scatter(X[:, 0], X[:, 1], s=10, c=labels)
+
+                ax = plt.subplot(111)
+                ax.scatter(X[:,0], X[:,1], color='grey', label='others')
+                
+                sub_low = subX[(subLabels == 0)]
+                ax.scatter(sub_low[:, 0], sub_low[:, 1], label=str(new_labels[0]))
+                
+                sub_high = subX[(subLabels == 1)]
+                ax.scatter(sub_high[:, 0], sub_high[:, 1], label=str(new_labels[1]))
+                ax.legend()
                 plt.show()
 
         self.labels_ = labels
@@ -100,12 +111,14 @@ class MyDumbClusterer():
 
             if self._rel_fade_size:
                 weight = self._build_weight(len(deltas))
-                deltas *= weight
+                weighted_deltas = deltas * weight
+            else:
+                weighted_deltas = deltas
 
-            split_ixes = abd._split_by_deltas(deltas, sort_ix)
+            split_ixes = abd._split_by_deltas(weighted_deltas, sort_ix)
             cq_low = self._get_cluster_quality(deltas[split_ixes[0]])
             cq_high = self._get_cluster_quality(deltas[split_ixes[1]])
-            if cq_low >= cq_parent and cq_high >= cq_parent:
+            if self._is_progress(cq_parent, cq_low, cq_high):
                 print(f'Good sub cluster qualities for label {label} at dimension {pca_dimension}.')
                 break
 
