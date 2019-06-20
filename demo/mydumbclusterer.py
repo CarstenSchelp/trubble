@@ -37,7 +37,7 @@ class MyDumbClusterer():
         labels = np.repeat(0, X.shape[0])
         labels_to_process = {}
         # initial label zero with dummy cluster quality
-        labels_to_process[self._get_next_label()] = 0
+        labels_to_process[self._get_next_label()] = 'dummy'
         # TODO: plot after every split!
         while labels_to_process:
             for label in list(labels_to_process.keys()):
@@ -51,14 +51,9 @@ class MyDumbClusterer():
                     labels_to_process.pop(label)
                     continue
 
-                subLabels, cq_parent, cq_low, cq_high = \
-                    self._divide(subX, labels_to_process[label], label)
-                if not labels_to_process[label]:
-                    # add calculated cluster quality for first label
-                    labels_to_process[label] = cq_parent
+                subLabels = self._divide(subX, label)
 
-                if not self._is_progress(cq_parent, cq_low, cq_high):
-                    print(f'stop at label {label} cqs: {cq_parent, cq_low, cq_high}')
+                if not subLabels.any():
                     labels_to_process.pop(label)
                     continue
 
@@ -66,20 +61,20 @@ class MyDumbClusterer():
                 labels[ix_label] = new_labels[np.array(subLabels)]
                 
                 labels_to_process.pop(label)
-                labels_to_process[new_labels[0]] = cq_low
-                labels_to_process[new_labels[1]] = cq_high
+                labels_to_process[new_labels[0]] = 'dummy'
+                labels_to_process[new_labels[1]] = 'dummy'
                 print(f'replaced label {label} with {new_labels[0]} and {new_labels[1]}')
 
-                ax = plt.subplot(111)
-                ax.scatter(X[:,0], X[:,1], color='grey', label='others')
-                
-                sub_low = subX[(subLabels == 0)]
-                ax.scatter(sub_low[:, 0], sub_low[:, 1], label=str(new_labels[0]))
-                
-                sub_high = subX[(subLabels == 1)]
-                ax.scatter(sub_high[:, 0], sub_high[:, 1], label=str(new_labels[1]))
-                ax.legend()
-                plt.show()
+#                ax = plt.subplot(111)
+#                ax.scatter(X[:,0], X[:,1], color='grey', label='others')
+#                
+#                sub_low = subX[(subLabels == 0)]
+#                ax.scatter(sub_low[:, 0], sub_low[:, 1], label=str(new_labels[0]))
+#                
+#                sub_high = subX[(subLabels == 1)]
+#                ax.scatter(sub_high[:, 0], sub_high[:, 1], label=str(new_labels[1]))
+#                ax.legend()
+#                plt.show()
 
         self.labels_ = labels
 
@@ -87,7 +82,7 @@ class MyDumbClusterer():
         variance = deltas.var()
         if variance == 0:
             print(f'Zero variance. deltas: {deltas}')
-        return np.square(deltas.mean()) / variance
+        return np.square(np.median(deltas)) / variance
     
     def _build_weight(self, n):
         if n < 3:
@@ -98,16 +93,14 @@ class MyDumbClusterer():
         weights[-n_fade:] = range(n_fade-1, -1, -1)
         return weights
 
-    def _divide(self, X, cq_parent, label):
+    def _divide(self, X, label):
         nrmpca = npca.NormPCA(X)
         # switch to next eigenvector when split along
         # first eigenvector yields poorer cluster quality
         for pca_dimension in range(0, X.shape[1]):
+            prj_values = nrmpca.projection[:, pca_dimension]
             deltas, sort_ix = \
-                abd._build_indexed_deltas(nrmpca.projection[:, pca_dimension])
-
-            if not cq_parent:
-                cq_parent = self._get_cluster_quality(deltas)
+                abd._build_indexed_deltas(prj_values)
 
             if self._rel_fade_size:
                 weight = self._build_weight(len(deltas))
@@ -116,11 +109,15 @@ class MyDumbClusterer():
                 weighted_deltas = deltas
 
             split_ixes = abd._split_by_deltas(weighted_deltas, sort_ix)
-            cq_low = self._get_cluster_quality(deltas[split_ixes[0]])
-            cq_high = self._get_cluster_quality(deltas[split_ixes[1]])
-            if self._is_progress(cq_parent, cq_low, cq_high):
-                print(f'Good sub cluster qualities for label {label} at dimension {pca_dimension}.')
-                break
+            range_total = prj_values[-1] - prj_values[0]
+            range_low =  prj_values[split_ixes[0][-1]] - prj_values[split_ixes[0][0]]
+            range_high =  prj_values[split_ixes[1][-1]] - prj_values[split_ixes[1][0]]
+            cluster_quality = 1 - (range_low + range_high) / range_total
+            # TODO: also evaluate relevance (subCount/totalCount)
+            if cluster_quality > 0.25:
+                print(f'Good cluster quality for label {label} at dimension {pca_dimension}.')
+                return abd.ixes_to_labels(X.shape[0], split_ixes)
 
-        return abd.ixes_to_labels(X.shape[0], split_ixes), \
-            cq_parent, cq_low, cq_high
+            print(f'stop at label {label} cluster quality: {cluster_quality}')
+            return np.array(())
+
