@@ -18,7 +18,11 @@ class NormPCA:
         sort_ix = np.flip(np.argsort(eigval))
         self.eigenvalues = eigval[sort_ix]
         self.eigenvectors = eignvect[sort_ix]
+        
+        # TODO: provide the following as function-results:
         self.projection = data.dot(self.eigenvectors.T)
+        self.covered_variance = \
+            np.cumsum(self.eigenvalues) / self.eigenvalues.sum()
 
 # TODO: help with dim-reduction decisions.
 # Big/small eigenvalues, preserved variance score ...
