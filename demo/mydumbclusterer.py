@@ -53,7 +53,7 @@ class MyDumbClusterer():
 
                 subLabels = self._divide(subX, label)
 
-                if not subLabels.any():
+                if subLabels is None:
                     labels_to_process.pop(label)
                     continue
 
@@ -108,16 +108,17 @@ class MyDumbClusterer():
             else:
                 weighted_deltas = deltas
 
+# TODO: debug cluster quality values.
             split_ixes = abd._split_by_deltas(weighted_deltas, sort_ix)
-            range_total = prj_values[-1] - prj_values[0]
-            range_low =  prj_values[split_ixes[0][-1]] - prj_values[split_ixes[0][0]]
-            range_high =  prj_values[split_ixes[1][-1]] - prj_values[split_ixes[1][0]]
+            range_total = abs(prj_values[-1] - prj_values[0])
+            range_low =  abs(prj_values[split_ixes[0]][-1] - prj_values[split_ixes[0]][0])
+            range_high =  abs(prj_values[split_ixes[1]][-1] - prj_values[split_ixes[1]][0])
             cluster_quality = 1 - (range_low + range_high) / range_total
             # TODO: also evaluate relevance (subCount/totalCount)
-            if cluster_quality > 0.25:
-                print(f'Good cluster quality for label {label} at dimension {pca_dimension}.')
+            if cluster_quality > 0.9:
+                print(f'Good cluster quality for label {label} at dimension {pca_dimension}: {cluster_quality}')
                 return abd.ixes_to_labels(X.shape[0], split_ixes)
 
             print(f'stop at label {label} cluster quality: {cluster_quality}')
-            return np.array(())
+            return None
 

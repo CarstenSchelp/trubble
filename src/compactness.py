@@ -8,37 +8,43 @@ Created on Wed Jul 10 15:19:55 2019
 import numpy as np
 import matplotlib.pyplot as plt
 
-def compactness(a):
-    uniform_range = a.max() - a.min()
 
+def estimate_compactness(a):
+    total_range = a.max() - a.min()
     std = a.std()
     if std == 0:
         return np.inf
-    normal_range =  6 * std
-    return uniform_range / normal_range
+    assumed_normal_range = 6 * std
+    return total_range / assumed_normal_range
 
-normal = np.random.normal(size=1000)#.array([1,2.5,3.4,3.7,4.5,6])
-uniform = np.random.uniform(size=1000)#np.array([2,4,6,8,10,12])
-stretch = np.array([1,2,7,8,12,13])
-hole = np.array([1,2,3,11,12,13])
+
+normal = np.random.normal(loc=100, scale=10, size=1000)
+uniform = np.random.uniform(low=-10, high=10, size=1000)
+linspace = np.linspace(-5, 7, 1000)
+stretch = np.array([1, 2, 7, 8, 12, 13])
+hole = np.array([1, 2, 3, 11, 12, 13])
 
 plt.hist(normal)
 plt.suptitle('normal')
-print(f"compactness normal {compactness(normal)}")
+print(f"estimate_compactness normal {estimate_compactness(normal)}")
+plt.show()
+
+plt.hist(linspace)
+plt.suptitle('linspace')
+print(f"estimate_compactness linspace {estimate_compactness(linspace)}")
 plt.show()
 
 plt.hist(uniform)
 plt.suptitle('uniform')
-print(f"compactness uniform {compactness(uniform)}")
+print(f"estimate_compactness uniform {estimate_compactness(uniform)}")
 plt.show()
 
 plt.hist(stretch)
 plt.suptitle('stretch')
-print(f"compactness stretch {compactness(stretch)}")
+print(f"estimate_compactness stretch {estimate_compactness(stretch)}")
 plt.show()
 
 plt.hist(hole)
 plt.suptitle('hole')
-print(f"compactness hole {compactness(hole)}")
+print(f"estimate_compactness hole {estimate_compactness(hole)}")
 plt.show()
-
